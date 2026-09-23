@@ -1,0 +1,66 @@
+inventario = []
+
+def agregar_producto():
+    # Le pedimos al usuario el mombre del producto que desea agregar.
+    nombre_producto = input("Nombre del producto: ")
+
+    for producto in inventario:
+        if producto["nombre"].lower() == nombre_producto.lower():
+            print(f"El producto '{nombre_producto}' ya existe en el inventario.")
+            return
+
+    # Una vez obtenido el precio lo convertimos a decimal con el float.
+    precio_producto = float(input("Precio del producto: "))
+
+    if precio_producto <= 0: # Damos la regla que el producto debe costar más de 0.
+        print("El precio debe ser mayor a 0. Producto no agregado.")
+        return
+
+    cantidad_producto = int(input("Cantidad inicial en stock: "))
+
+    # Se crea el diccionario para el nuevo producto.
+    nuevo_producto = {
+        "nombre": nombre_producto,
+        "precio": precio_producto,
+        "cantidad": cantidad_producto
+    }
+    # Se agrega a la lista.
+    inventario.append(nuevo_producto)
+
+    # Se da el mensaje de confirmación.
+    print(f"Producto agregado: {nombre_producto} | Precio: {precio_producto} | Cantidad: {cantidad_producto}")
+
+while True:
+    # Se muestran las 8 opciones al usuario.
+    print("\n--- MENÚ FERRETERÍA ---")
+    print("1. Agregar producto")
+    print("2. Consultar inventario")
+    print("3. Buscar producto")
+    print("4. Vender producto")
+    print("5. Reporte de stock bajo")
+    print("6. Ver ventas del día")
+    print("7. Ver total vendido en el día")
+    print("8. Salir")
+
+# input() siempre regresa texto, asi que por eso usamos int() para convertirlo a número y poder compararlo con las opciones.
+    opcion = input("Elige una opción: ")
+
+    if opcion == "1":
+        agregar_producto()
+    elif opcion == "2":
+        print("Aquí va consultar inventario")
+    elif opcion == "3":
+        print("Aquí va buscar producto")
+    elif opcion == "4":
+        print("Aquí va vender producto")
+    elif opcion == "5":
+        print("Aquí va reporte de stock bajo")
+    elif opcion == "6":
+        print("Aquí va ver ventas del día")
+    elif opcion == "7":
+        print("Aquí va total vendido en el día")
+    elif opcion == "8":
+        print("Programa finalizado.")
+        break 
+    else:
+        print("Opción no válida, intenta de nuevo.")
