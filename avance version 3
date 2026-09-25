@@ -1,0 +1,147 @@
+inventario = []
+
+def agregar_producto():
+    # Le pedimos al usuario el mombre del producto que desea agregar.
+    nombre_producto = input("Nombre del producto: ")
+
+    for producto in inventario:
+        if producto["nombre"].lower() == nombre_producto.lower():
+            print(f"El producto '{nombre_producto}' ya existe en el inventario.")
+            return
+
+    # Una vez obtenido el precio lo convertimos a decimal con el float.
+    precio_producto = float(input("Precio del producto: "))
+
+    if precio_producto <= 0: # Damos la regla que el producto debe costar más de 0.
+        print("El precio debe ser mayor a 0. Producto no agregado.")
+        return
+
+    cantidad_producto = int(input("Cantidad inicial en stock: "))
+
+    # Se crea el diccionario para el nuevo producto.
+    nuevo_producto = {
+        "nombre": nombre_producto,
+        "precio": precio_producto,
+        "cantidad": cantidad_producto
+    }
+    # Se agrega a la lista.
+    inventario.append(nuevo_producto)
+
+   
+    print(f"Producto agregado: {nombre_producto} | Precio: {precio_producto} | Cantidad: {cantidad_producto}")
+
+
+def consultar_inventario():
+    print("\n--- INVENTARIO COMPLETO (FERRETERÍA) ---")
+    
+    # Si el inventario está vacío, avisa y detiene la función
+    if not inventario: 
+        print("El inventario está vacío. Aún no hay productos registrados.")
+        return 
+   
+    # Títulos de las columnas usando tabuladores (\t)
+    print("Producto\t\tPrecio\t\tStock")
+    print("-" * 48)
+    
+    # Recorremos cada producto guardado en la lista
+    for producto in inventario:
+        nombre = producto["nombre"]
+        precio = round(producto["precio"], 2) # Redondeamos a 2 decimales
+        cantidad = producto["cantidad"]
+        
+        # Imprimimos los datos en formato de tabla
+        print(f"{nombre}\t\t${precio}\t\t{cantidad}")
+        
+    print("-" * 48)
+
+
+def buscar_producto():
+    print("\n--- BUSCAR PRODUCTO ---")
+
+    nombre = input("Ingresa el nombre del producto: ")
+
+    if nombre in inventario:
+        datos = inventario[nombre]
+
+        print("\nProducto encontrado:")
+        print(f"Nombre: {nombre}")
+        print(f"Precio: ${datos['precio']:.2f}")
+        print(f"Stock: {datos['cantidad']}")
+
+    else:
+        print(f"El producto '{nombre}' no se encontró.")
+
+
+
+
+while True:
+    print("\n--- MENÚ FERRETERÍA ---")
+    print("1. Agregar producto")
+    print("2. Consultar inventario")
+    print("3. Buscar producto")
+    print("4. Vender producto")
+    print("5. Reporte de stock bajo")
+    print("6. Ver ventas del día")
+    print("7. Ver total vendido en el día")
+    print("8. Salir")
+
+    opcion = input("Elige una opción: ")
+
+    if opcion == "1":
+        agregar_producto()
+    elif opcion == "2":
+        consultar_inventario()
+    elif opcion == "3":
+        buscar_producto()
+    elif opcion == "4":
+        print("Aquí va vender producto")
+    elif opcion == "5":
+        print("Aquí va reporte de stock bajo")
+    elif opcion == "6":
+        print("Aquí va ver ventas del día")
+    elif opcion == "7":
+        print("Aquí va total vendido en el día")
+    elif opcion == "8":
+        print("Programa finalizado.")
+        break 
+    else:
+        print("Opción no válida, intenta de nuevo.") # buscar producto y mostrar el nombre, precio y stock 
+
+    def buscar_producto():
+    print("\n--- BUSCAR PRODUCTO ---")
+
+    nombre = input("Ingresa el nombre del producto: ")
+
+    if nombre in inventario:
+        datos = inventario[nombre]
+
+        print("\nProducto encontrado:")
+        print(f"Nombre: {nombre}")
+        print(f"Precio: ${datos['precio']:.2f}")
+        print(f"Stock: {datos['cantidad']}")
+
+    else:
+        print(f"El producto '{nombre}' no se encontró.")
+
+
+
+
+
+     # ver los stock bajas del inventario 
+   
+    def reporte_stock_bajo():
+    print("\n--- REPORTE DE STOCK BAJO ---")
+
+    limite_stock = 5
+    productos_bajos = False
+
+    for nombre, datos in inventario.items():
+
+        if datos["cantidad"] <= limite_stock:
+
+            print(f"{nombre} Stock: {datos['cantidad']}")
+
+            productos_bajos = True
+
+    if not productos_bajos:
+        print("No hay productos en stock bajas !!")
