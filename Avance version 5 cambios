@@ -1,0 +1,217 @@
+# Variables globales
+inventario = []
+# CAMBIO: Se agregó la lista 'ventas' para guardar el historial de compras del día
+ventas = []
+
+
+def agregar_producto():
+    print("\n--- AGREGAR PRODUCTO ---")
+    nombre_producto = input("Nombre del producto: ")
+
+    # CAMBIO: Se cambió la búsqueda para recorrer la lista de diccionarios e ignorar mayúsculas/minúsculas
+    for producto in inventario:
+        if producto["nombre"].lower() == nombre_producto.lower():
+            print(
+                f"El producto '{nombre_producto}' ya existe en el inventario."
+            )
+            return
+
+    # CAMBIO: Se envolvió la entrada de datos en 'try-except' para evitar que falle si escriben texto en los números
+    try:
+        precio_producto = float(input("Precio del producto: "))
+        if precio_producto <= 0:
+            print("El precio debe ser mayor a 0. Producto no agregado.")
+            return
+
+        cantidad_producto = int(input("Cantidad inicial en stock: "))
+        if cantidad_producto < 0:
+            print("La cantidad no puede ser negativa. Producto no agregado.")
+            return
+    except ValueError:
+        print("Entrada inválida. Asegúrate de ingresar un número válido.")
+        return
+
+    nuevo_producto = {
+        "nombre": nombre_producto,
+        "precio": precio_producto,
+        "cantidad": cantidad_producto,
+    }
+
+    inventario.append(nuevo_producto)
+    print(
+        f"Producto agregado: {nombre_producto} | Precio: ${precio_producto:.2f} | Cantidad: {cantidad_producto}"
+    )
+
+
+def consultar_inventario():
+    print("\n--- INVENTARIO COMPLETO (FERRETERÍA) ---")
+
+    if not inventario:
+        print("El inventario está vacío. Aún no hay productos registrados.")
+        return
+
+    print("Producto\t\tPrecio\t\tStock")
+    print("-" * 48)
+
+    for producto in inventario:
+        nombre = producto["nombre"]
+        precio = round(producto["precio"], 2)
+        cantidad = producto["cantidad"]
+        print(f"{nombre}\t\t${precio:.2f}\t\t{cantidad}")
+
+    print("-" * 48)
+
+
+# CAMBIO: Función reescrita por completo fuera del menú 'while'
+def buscar_producto():
+    print("\n--- BUSCAR PRODUCTO ---")
+
+    if not inventario:
+        print("El inventario está vacío. Aún no hay productos registrados.")
+        return
+
+    nombre_busqueda = input("Ingresa el nombre del producto: ")
+
+    # CAMBIO: Se cambió 'if nombre in inventario:' por un bucle 'for' para buscar en la lista
+    for producto in inventario:
+        if producto["nombre"].lower() == nombre_busqueda.lower():
+            print("\nProducto encontrado:")
+            print(f"Nombre: {producto['nombre']}")
+            print(f"Precio: ${producto['precio']:.2f}")
+            print(f"Stock: {producto['cantidad']}")
+            return  # Sale al encontrar el producto
+
+    print(f"El producto '{nombre_busqueda}' no se encontró.")
+
+
+# CAMBIO: Se implementó 'vender_producto' reemplazando el texto temporal ("Aquí va...")
+def vender_producto():
+    print("\n--- VENDER PRODUCTO ---")
+
+    if not inventario:
+        print("El inventario está vacío. No hay productos para vender.")
+        return
+
+    nombre_busqueda = input("Ingresa el nombre del producto a vender: ")
+
+    for producto in inventario:
+        if producto["nombre"].lower() == nombre_busqueda.lower():
+            try:
+                cantidad_vender = int(
+                    input(
+                        f"Cantidad a vender (Stock disponible: {producto['cantidad']}): "
+                    )
+                )
+            except ValueError:
+                print("Por favor, ingresa una cantidad numérica entera.")
+                return
+
+            if cantidad_vender <= 0:
+                print("La cantidad a vender debe ser mayor a 0.")
+                return
+
+            if cantidad_vender > producto["cantidad"]:
+                print("No hay suficiente stock para realizar la venta.")
+                return
+
+            # Descontar del inventario y registrar la venta
+            producto["cantidad"] -= cantidad_vender
+            total_venta = cantidad_vender * producto["precio"]
+
+            registro_venta = {
+                "producto": producto["nombre"],
+                "cantidad": cantidad_vender,
+                "total": total_venta,
+            }
+            ventas.append(registro_venta)
+
+            print(
+                f"Venta realizada exitosamente. Total a cobrar: ${total_venta:.2f}"
+            )
+            return
+
+    print(f"El producto '{nombre_busqueda}' no se encontró.")
+
+
+# CAMBIO: Se arregló el método de recorrido en la lista de diccionarios
+def reporte_stock_bajo():
+    print("\n--- REPORTE DE STOCK BAJO ---")
+
+    if not inventario:
+        print("El inventario está vacío.")
+        return
+
+    limite_stock = 5
+    productos_bajos = False
+
+    # CAMBIO: Se cambió 'inventario.items()' por iterar sobre los elementos de la lista 'inventario'
+    for producto in inventario:
+        if producto["cantidad"] <= limite_stock:
+            print(
+                f"Producto: {producto['nombre']} | Stock actual: {producto['cantidad']}"
+            )
+            productos_bajos = True
+
+    if not productos_bajos:
+        print(f"No hay productos con stock igual o inferior a {limite_stock}.")
+
+
+# CAMBIO: Se completó la función para ver todas las ventas registradas
+def ver_ventas(ventas_list):
+    print("\n--- VENTAS DEL DÍA ---")
+
+    if not ventas_list:
+        print("No se han registrado ventas el día de hoy.")
+        return
+
+    for i, venta in enumerate(ventas_list, 1):
+        print(
+            f"{i}. Producto: {venta['producto']} | Cantidad: {venta['cantidad']} | Total: ${venta['total']:.2f}"
+        )
+
+
+# CAMBIO: Se completó la suma e impresión del total vendido
+def total_vendido(ventas_list):
+    print("\n--- TOTAL VENDIDO EN EL DÍA ---")
+
+    if not ventas_list:
+        print("El total acumulado hoy es: $0.00")
+        return
+
+    total = sum(venta["total"] for venta in ventas_list)
+    print(f"El total recaudado hoy es: ${total:.2f}")
+
+
+# CAMBIO: El bucle 'while' ahora solo contiene la presentación del menú y llamadas a funciones
+while True:
+    print("\n--- MENÚ FERRETERÍA ---")
+    print("1. Agregar producto")
+    print("2. Consultar inventario")
+    print("3. Buscar producto")
+    print("4. Vender producto")
+    print("5. Reporte de stock bajo")
+    print("6. Ver ventas del día")
+    print("7. Ver total vendido en el día")
+    print("8. Salir")
+
+    opcion = input("Elige una opción: ")
+
+    if opcion == "1":
+        agregar_producto()
+    elif opcion == "2":
+        consultar_inventario()
+    elif opcion == "3":
+        buscar_producto()
+    elif opcion == "4":
+        vender_producto()  # CAMBIO: Llama a la función implementada
+    elif opcion == "5":
+        reporte_stock_bajo()  # CAMBIO: Llama a la función corregida
+    elif opcion == "6":
+        ver_ventas(ventas)  # CAMBIO: Llama a la función de ventas
+    elif opcion == "7":
+        total_vendido(ventas)  # CAMBIO: Llama a la función de total vendido
+    elif opcion == "8":
+        print("Programa finalizado. ¡Hasta luego!")
+        break
+    else:
+        print("Opción no válida, intenta de nuevo.")
