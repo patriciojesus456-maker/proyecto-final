@@ -1,0 +1,411 @@
+# Variables para almacenar la información 
+# 'inventario' es la lista principal que almacena los diccionarios de cada producto de la ferretería
+inventario = []  
+# 'ventas' es la lista para guardar el historial de transacciones (compras/ventas) realizadas en el día
+ventas = []      
+
+def cargar_inventario():
+    """
+    Función encargada de leer el archivo de texto 'inventario.txt' al iniciar el programa.
+    Busca recuperar la información de sesiones anteriores.
+    """
+    # Se utiliza un bloque try-except para manejar el caso donde el archivo aún no exista
+    try:
+        # Abre el archivo en modo lectura ("r")
+        with open("inventario.txt", "r") as archivo:
+            # Recorre el archivo de texto línea por línea
+            for linea in archivo:
+                # Quita espacios en blanco o saltos de línea al final
+                # y separa los datos utilizando la coma 
+                datos = linea.strip().split(",")
+
+                # Valida que la línea contenga exactamente los 3 datos requeridos (nombre, precio, cantidad)
+                if len(datos) == 3:
+                    # Estructura los datos leídos en un diccionario
+                    producto = {
+                        # El primer dato es el nombre (cadena de texto)
+                        "nombre": datos[0],
+                        # El segundo dato se convierte a número decimal (float) para el precio
+                        "precio": float(datos[1]),
+                        # El tercer dato se convierte a número entero (int) para la cantidad en stock
+                        "cantidad": int(datos[2]),
+                    }
+                    # Añade el producto recuperado a la lista global de inventario
+                    inventario.append(producto)
+            # Confirma al usuario que los datos previos se cargaron con éxito
+            print("Se cargó un inventario existente.")
+    # Si el archivo no se encuentra (FileNotFoundError), es la primera vez que se ejecuta
+    except FileNotFoundError:
+        # Informa al usuario que se iniciará con un inventario en blanco
+        print("Primera vez que se usa el programa: se inició un inventario nuevo.")
+
+
+def guardar_inventario():
+    """
+    Función que recorre la lista global 'inventario' antes de salir del programa 
+    y guarda cada producto en el archivo de texto 'inventario.txt' para persistencia.
+    """
+    # Abre el archivo en modo escritura ("w"), lo que sobreescribe el contenido anterior
+    with open("inventario.txt", "w") as archivo:
+        # Itera sobre cada diccionario de producto en la lista del inventario
+        for producto in inventario:
+            # Convierte los datos del diccionario a una cadena de texto separada por comas
+            # Se agrega un salto de línea (\n) al final para separar cada producto
+            linea = f"{producto['nombre']},{producto['precio']},{producto['cantidad']}\n"
+            # Escribe la línea formateada en el archivo de texto
+            archivo.write(linea)
+        # Informa al usuario que el proceso de guardado finalizó con éxito
+        print("El inventario fue guardado correctamente.")
+
+
+def agregar_producto():
+    """
+    Función para registrar un nuevo producto en el inventario.
+    Solicita nombre, precio y stock inicial, validando duplicados y tipos de datos.
+    """
+    # Muestra el encabezado de la sección en consola
+    print("\n--- AGREGAR PRODUCTO ---")
+    # Pide al usuario que teclee el nombre del nuevo artículo
+    nombre_producto = input("Nombre del producto: ")
+
+    # Recorre la lista de diccionarios para verificar si el producto ya existe
+    for producto in inventario:
+        # Compara los nombres en minúsculas para evitar duplicados por diferencias de mayúsculas
+        if producto["nombre"].lower() == nombre_producto.lower():
+            # Si hay coincidencia, avisa al usuario y cancela la operación
+            print(f"El producto '{nombre_producto}' ya existe en el inventario.")
+            # Finaliza la ejecución de la función anticipadamente
+            return
+
+    # Bloque try-except para evitar errores si el usuario ingresa texto en lugar de números
+    try:
+        # Solicita el precio y lo intenta convertir a número decimal (float)
+        precio_producto = float(input("Precio del producto: "))
+        # Valida que el precio no sea cero ni negativo
+        if precio_producto <= 0:
+            # Si el precio es inválido, muestra mensaje de error y sale de la función
+            print("El precio debe ser mayor a 0. Producto no agregado.")
+            return
+
+        # Solicita la cantidad en stock y la intenta convertir a número entero (int)
+        cantidad_producto = int(input("Cantidad inicial en stock: "))
+        # Valida que el stock inicial no sea un número negativo
+        if cantidad_producto < 0:
+            # Si el stock es negativo, muestra mensaje de error y sale de la función
+            print("La cantidad no puede ser negativa. Producto no agregado.")
+            return
+    # Captura el error si la conversión a número falla (ej. si el usuario escribe "veinte")
+    except ValueError:
+        # Avisa sobre el formato incorrecto y cancela el registro
+        print("Entrada inválida. Asegúrate de ingresar un número válido.")
+        return
+
+    # Crea un diccionario con la estructura del nuevo producto usando los datos validados
+    nuevo_producto = {
+        "nombre": nombre_producto,
+        "precio": precio_producto,
+        "cantidad": cantidad_producto,
+    }
+
+    # Agrega el diccionario del nuevo producto a la lista global del inventario
+    inventario.append(nuevo_producto)
+    # Imprime un mensaje de confirmación mostrando los detalles registrados
+    print(f"Producto agregado: {nombre_producto} | Precio: ${precio_producto:.2f} | Cantidad: {cantidad_producto}")
+
+
+def consultar_inventario():
+    """
+    Función que despliega en formato de tabla todos los productos 
+    actualmente registrados en el inventario global.
+    """
+    # Muestra el encabezado de la sección
+    print("\n--- INVENTARIO COMPLETO (FERRETERÍA) ---")
+
+    # Verifica si la lista del inventario está vacía
+    if not inventario:
+        # Avisa que no hay datos para mostrar y sale de la función
+        print("El inventario está vacío. Aún no hay productos registrados.")
+        return
+
+    # Imprime los encabezados de las columnas de la tabla separados por tabulaciones
+    print("Producto\t\tPrecio\t\tStock")
+    # Imprime una línea divisoria para mejorar la presentación visual
+    print("-" * 48)
+
+    # Recorre cada diccionario almacenado en la lista global
+    for producto in inventario:
+        # Extrae el nombre del producto actual
+        nombre = producto["nombre"]
+        # Redondea el precio a dos decimales para darle formato de moneda
+        precio = round(producto["precio"], 2)
+        # Extrae la cantidad actual en stock
+        cantidad = producto["cantidad"]
+        
+        # Imprime los datos tabulados en la consola utilizando interpolación de cadenas (f-strings)
+        print(f"{nombre}\t\t${precio:.2f}\t\t{cantidad}")
+
+    # Imprime una línea divisoria final para cerrar la tabla
+    print("-" * 48)
+
+
+def buscar_producto():
+    """
+    Función que permite buscar un producto específico por su nombre 
+    dentro del inventario y muestra sus detalles si es encontrado.
+    """
+    # Muestra el encabezado de la sección
+    print("\n--- BUSCAR PRODUCTO ---")
+
+    # Verifica si existen productos antes de iniciar la búsqueda
+    if not inventario:
+        # Si no hay productos, informa al usuario y cancela la búsqueda
+        print("El inventario está vacío. Aún no hay productos registrados.")
+        return
+
+    # Pide al usuario el nombre exacto 
+    nombre_busqueda = input("Ingresa el nombre del producto: ")
+
+    # Recorre la lista de inventario buscando el artículo
+    for producto in inventario: 
+        if producto["nombre"].lower() == nombre_busqueda.lower():
+            # Si encuentra coincidencia, avisa al usuario
+            print("\nProducto encontrado:")
+            # Muestra el nombre guardado en el sistema
+            print(f"Nombre: {producto['nombre']}")
+            # Muestra el precio formateado a dos decimales
+            print(f"Precio: ${producto['precio']:.2f}")
+            # Muestra las existencias actuales
+            print(f"Stock: {producto['cantidad']}")
+            # Termina la ejecución de la función inmediatamente al encontrar el producto
+            return  
+
+    # Si el ciclo termina sin encontrar coincidencias, muestra mensaje de error
+    print(f"El producto '{nombre_busqueda}' no se encontró.")
+
+
+def vender_producto():
+    """
+    Función que gestiona el proceso de venta de un artículo, 
+    verificando la disponibilidad de stock, descontando las unidades vendidas 
+    y registrando la transacción en el historial de ventas del día.
+    """
+    # Muestra el encabezado de la sección
+    print("\n--- VENDER PRODUCTO ---")
+
+    # Verifica que haya artículos disponibles antes de intentar vender
+    if not inventario:
+        # Si la lista está vacía, aborta la operación
+        print("El inventario está vacío. No hay productos para vender.")
+        return
+
+    # Solicita el nombre del producto que el cliente desea comprar
+    nombre_busqueda = input("Ingresa el nombre del producto a vender: ")
+
+    # Recorre el inventario para localizar el artículo
+    for producto in inventario:
+        # Compara el nombre ignorando mayúsculas/minúsculas
+        if producto["nombre"].lower() == nombre_busqueda.lower():
+            # Inicia bloque para manejar errores de ingreso de cantidad
+            try:
+                # Muestra el stock disponible y solicita la cantidad que se va a vender
+                # Convierte la entrada a un número entero
+                cantidad_vender = int(input(f"Cantidad a vender (Stock disponible: {producto['cantidad']}): "))
+            # Captura el error si el usuario ingresa letras en vez de números
+            except ValueError:
+                # Informa del error y cancela la transacción
+                print("Por favor, ingresa una cantidad numérica entera.")
+                return
+
+            # Valida que no se intenten vender cantidades nulas o negativas
+            if cantidad_vender <= 0:
+                # Muestra mensaje de error y detiene la venta
+                print("La cantidad a vender debe ser mayor a 0.")
+                return
+
+            # Verifica si el cliente pide más unidades de las que hay en existencia
+            if cantidad_vender > producto["cantidad"]:
+                # Deniega la venta por falta de stock suficiente
+                print("No hay suficiente stock para realizar la venta.")
+                return
+
+            # Actualiza el inventario restando las unidades que se están vendiendo
+            producto["cantidad"] -= cantidad_vender
+            # Calcula el dinero a cobrar multiplicando la cantidad por el precio unitario
+            total_venta = cantidad_vender * producto["precio"]
+
+            # Crea un nuevo diccionario para el registro individual de esta venta
+            registro_venta = {
+                # Guarda el nombre del artículo vendido
+                "producto": producto["nombre"],
+                # Guarda cuántas unidades se vendieron
+                "cantidad": cantidad_vender,
+                # Guarda el ingreso generado por esta transacción
+                "total": total_venta,
+            }
+            # Añade este nuevo registro al historial global de ventas del día
+            ventas.append(registro_venta)
+
+            # Confirma la operación y muestra el monto final a cobrar al cliente
+            print(f"Venta realizada exitosamente. Total a cobrar: ${total_venta:.2f}")
+            # Finaliza la función tras completar la venta
+            return
+
+    # Si se recorrió toda la lista y no hubo coincidencias, avisa que el producto no existe
+    print(f"El producto '{nombre_busqueda}' no se encontró.")
+
+
+def reporte_stock_bajo():
+    """
+    Función que revisa el inventario y genera un reporte de alerta 
+    para aquellos productos cuya cantidad en stock sea igual o menor a un límite establecido.
+    """
+    # Muestra el encabezado de la sección
+    print("\n--- REPORTE DE STOCK BAJO ---")
+
+    # Revisa si hay productos registrados en el sistema
+    if not inventario:
+        # Si no hay productos, cancela la generación del reporte
+        print("El inventario está vacío.")
+        return
+
+   
+    limite_stock = 5
+    # Variable bandera (booleana) para rastrear si se encontró al menos un producto con stock bajo
+    productos_bajos = False
+
+    # Itera sobre todos los productos del inventario 
+    for producto in inventario:
+        # Comprueba si las existencias del artículo son menores o iguales al umbral
+        if producto["cantidad"] <= limite_stock:
+            print(f"Producto: {producto['nombre']} | Stock actual: {producto['cantidad']}")
+            # Cambia el estado de la bandera a Verdadero, indicando que sí hubo resultados
+            productos_bajos = True
+
+    # Si después de revisar todo el inventario la bandera sigue en Falso
+    if not productos_bajos:
+        # Avisa que todo el inventario goza de buena salud (por encima del límite)
+        print(f"No hay productos con stock igual o inferior a {limite_stock}.")
+
+
+def ver_ventas(ventas_list):
+    """
+    Función que imprime en pantalla el listado detallado 
+    de todas las transacciones de venta registradas durante la sesión actual.
+    """
+    # Muestra el encabezado de la sección
+    print("\n--- VENTAS DEL DÍA ---")
+
+    # Verifica si la lista de ventas está vacía (no se ha vendido nada hoy)
+    if not ventas_list:
+        # Informa que no hay transacciones registradas
+        print("No se han registrado ventas el día de hoy.")
+        return
+
+    # Itera sobre la lista que contiene los registros de las ventas realizadas
+    for venta in ventas:
+        # Extrae el nombre del producto vendido de la transacción actual
+        producto = venta["producto"]
+        # Extrae el número de unidades vendidas
+        cantidad = venta["cantidad"]
+        # Extrae el monto total cobrado en esa transacción
+        total = venta["total"]
+
+        # Muestra en consola el nombre del producto
+        print("Producto:", producto)
+        # Muestra en consola la cantidad despachada
+        print("Cantidad:", cantidad)
+        # Muestra en consola el ingreso de esa venta específica
+        print("Total:", total)
+        # Imprime un espacio en blanco para separar los registros visualmente
+        print("")
+
+
+def total_vendido(ventas_list):
+    """
+    Función que calcula y muestra la suma total 
+    de los ingresos económicos recaudados por todas las ventas del día.
+    """
+    # Muestra el encabezado de la sección
+    print("\n--- TOTAL VENDIDO EN EL DÍA ---")
+
+    # Comprueba si existen ventas registradas en la lista
+    if not ventas_list:
+        # Si no hay ventas, el ingreso es cero
+        print("El total acumulado hoy es: $0.00")
+        return
+
+    # Inicializa una variable acumuladora en 0 para sumar los ingresos
+    total = 0
+
+    # Recorre cada transacción dentro de la lista de ventas del día
+    for venta in ventas_list:
+        # Suma el monto de la venta actual al acumulador total
+        total = total + venta["total"]
+
+    # Imprime el resultado final de la suma de todas las transacciones
+    print(f"El total recaudado hoy es: ${total:.2f}")
+
+
+
+
+# Carga automática del inventario desde el archivo de texto al arrancar la aplicación
+cargar_inventario()
+
+# Ciclo infinito (while True) que mantiene el programa en ejecución mostrando el menú
+# Se detendrá únicamente cuando el usuario seleccione la opción de salir
+while True:
+    # Imprime las opciones disponibles del menú principal de la ferretería
+    print("\n--- MENÚ FERRETERÍA ---")
+    print("1. Agregar producto")
+    print("2. Consultar inventario")
+    print("3. Buscar producto")
+    print("4. Vender producto")
+    print("5. Reporte de stock bajo")
+    print("6. Ver ventas del día")
+    print("7. Ver total vendido en el día")
+    print("8. Salir")
+
+    # Captura la elección del usuario desde el teclado
+    opcion = input("Elige una opción: ")
+
+    # Estructura de control condicional múltiple para direccionar la ejecución según la opción elegida
+    if opcion == "1":
+        # Llama a la función para registrar un artículo nuevo en el sistema
+        agregar_producto()
+        
+    elif opcion == "2":
+        # Llama a la función para desplegar la tabla con todos los productos guardados
+        consultar_inventario()
+        
+    elif opcion == "3":
+        # Llama a la función que permite rastrear un artículo específico por su nombre
+        buscar_producto()
+        
+    elif opcion == "4":
+        # Llama a la función que gestiona el cobro y descuento de unidades de un producto
+        vender_producto()  
+        
+    elif opcion == "5":
+        # Llama a la función que genera alertas sobre productos con 5 o menos existencias
+        reporte_stock_bajo()  
+        
+    elif opcion == "6":
+        # Pasa la lista global 'ventas' como argumento para visualizar el historial de transacciones
+        ver_ventas(ventas)  
+        
+    elif opcion == "7":
+        # Pasa la lista global 'ventas' como argumento para calcular los ingresos económicos totales
+        total_vendido(ventas)  
+        
+    elif opcion == "8":
+        # Opción de cierre: primero guarda el estado actual del inventario en el archivo .txt
+        guardar_inventario()
+        # Muestra mensaje de despedida en la consola
+        print("Programa finalizado. ¡Hasta luego!")
+        # Rompe el ciclo while, finalizando completamente la ejecución del programa
+        break
+        
+    else:
+        # Se ejecuta si el usuario teclea algo distinto a los números del 1 al 8
+        # Avisa del error y el ciclo vuelve a empezar, mostrando el menú nuevamente
+        print("Opción no válida, intenta de nuevo.")
